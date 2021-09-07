@@ -1,0 +1,86 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+      crossorigin="" />
+
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+
+<div id="mapid" style="height: 380px;"></div>
+<br /><br />
+      <p>When you hit the "save button", an alert message will inform you about the coordinates which you have been choose</p>
+      <br /><br />
+      <input type="button" value="Save" onclick="SaveDocument()" />
+<br /><br />
+      
+      <input type="button" value="Download" onclick="DownloadJSON()" />
+
+
+<script>
+    const arrayX = [];
+    var clicked;
+    var obj;
+    var mymap = L.map('mapid').setView([51.505, -0.09], 13);
+
+
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiY2VtY28iLCJhIjoiY2t0OHdudzE3MTZpcDJvbGF2cnU0NW8zeiJ9.6xxVOP1M7O_l-VEZXsXcZA', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken: 'your.mapbox.access.token'
+    }).addTo(mymap);
+
+    var marker = L.marker([51.5, -0.09]).addTo(mymap);
+
+    function onMapClick(e) {
+
+        clicked = e.latlng;
+        obj = JSON.stringify(clicked);
+        arrayX.push(obj);
+        
+
+    }
+
+    mymap.on('click', onMapClick);
+
+    function SaveDocument() {
+        let text = arrayX;
+        alert(text);
+        $.ajax({
+            url: "/Home/Save",
+            type: "POST",               
+            data: { "data": text}
+        });
+    }
+
+    function DownloadJSON() {
+        
+
+        var json = JSON.stringify(arrayX);
+
+        json = [json];
+        var blob1 = new Blob(json, { type: "text/plain;charset=utf-8" });
+
+        var isIE = false || !!document.documentMode;
+        if (isIE) {
+            window.navigator.msSaveBlob(blob1, "arrayX.txt");
+        } else {
+            var url = window.URL || window.webkitURL;
+            link = url.createObjectURL(blob1);
+            var a = document.createElement("a");
+            a.download = "arrayX.txt";
+            a.href = link;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    }
+
+</script>
